@@ -241,3 +241,6 @@ dbt/logs/
 
 # Airflow (later)
 airflow/logs/
+
+# Editor settings
+.vscode/

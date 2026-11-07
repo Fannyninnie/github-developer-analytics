@@ -218,3 +218,26 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# Secrets
+.env
+service-account*.json
+credentials*.json
+
+# Virtual environments
+.venv/
+venv/
+
+# Raw data
+data/raw/*
+!data/raw/.gitkeep
+
+# macOS
+.DS_Store
+
+# dbt (later)
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+
+# Airflow (later)
+airflow/logs/

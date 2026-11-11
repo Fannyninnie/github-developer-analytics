@@ -1,0 +1,8 @@
+pallets/flask
+psf/requests
+encode/httpx
+fastapi/fastapi
+pallets/click
+psf/black
+pytest-dev/pytest
+dbt-labs/dbt-core

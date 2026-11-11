@@ -14,3 +14,5 @@
 - Commit author login can be null.
 - Everything is paginated (max 100 per page).
 - Flask has about 5,500 commits, so the first load needs a date limit.
+- `open_issues_count` on a repo includes open pull requests, so it is not the same as the number of open issues.
+- Repo stars and forks are only available as a current total, so a snapshot must be saved every day to keep history.

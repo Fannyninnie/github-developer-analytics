@@ -244,3 +244,6 @@ airflow/logs/
 
 # Editor settings
 .vscode/
+
+# Pipeline state
+data/state/

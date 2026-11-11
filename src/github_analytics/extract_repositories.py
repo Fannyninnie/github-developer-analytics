@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from api_client import GitHubClient
@@ -39,7 +39,7 @@ def main():
         level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s"
     )
     client = GitHubClient()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     today = now.date().isoformat()
 
     saved = 0

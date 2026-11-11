@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from api_client import GitHubClient
@@ -39,7 +39,7 @@ def main():
     client = GitHubClient()
     state = load_state()
 
-    run_started = datetime.now(timezone.utc)
+    run_started = datetime.now(UTC)
     first_load_start = (run_started - timedelta(days=INITIAL_LOAD_DAYS)).replace(
         hour=0, minute=0, second=0, microsecond=0
     )

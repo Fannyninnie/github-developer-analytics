@@ -4,7 +4,7 @@ End-to-end data pipeline that ingests public GitHub activity,
 loads it into BigQuery, models it with dbt, and orchestrates it with Airflow.
 
 ## Status
-In development (Day 5 of 35)
+In development (Day 11 of 35)
 
 ## Planned stack
 Python, GitHub REST API, BigQuery, dbt, Airflow, Docker, Looker Studio
@@ -16,7 +16,7 @@ See [docs/architecture.md](docs/architecture.md).
 See [docs/data_model.md](docs/data_model.md).
 
 ## Roadmap
-- [ ] API ingestion (incremental)
+- [x] API ingestion (incremental)
 - [ ] BigQuery raw layer
 - [ ] dbt staging and marts
 - [ ] Data quality tests and CI

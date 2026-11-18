@@ -24,3 +24,17 @@ GitHub's API only gives the star and fork counts as of right now. If the table h
 ## Why raw keeps nulls
 
 The raw layer stores data exactly as GitHub sent it, including empty values such as a commit author with a null login. Decisions about what to do with them, like replacing them with "unknown", happen in staging. That way the original data is never lost and the pipeline can be rebuilt from raw if something goes wrong.
+
+## Raw tables in BigQuery
+
+Dataset `raw`, location US. Every table is partitioned by day and clustered by `repo`.
+
+| Table | One row is | Partitioned by |
+|---|---|---|
+| repo_snapshots | one repo on one day | snapshot_date |
+| repositories | one repo as extracted | extracted_at |
+| commits | one commit | extracted_at |
+| issues | one issue item (PRs included) | extracted_at |
+| pull_requests | one pull request | extracted_at |
+
+Payload tables keep the original JSON in a `payload` column plus bookkeeping columns. `batch_id` lets a load replace one batch without duplicating rows.

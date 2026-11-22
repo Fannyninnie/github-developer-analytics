@@ -25,3 +25,5 @@
 
 - The pulls endpoint has no `since` filter, so incremental extraction sorts by `updated_at` descending and stops at the bookmark.
 - `since` on issues filters by `updated_at`, so the same issue can appear in several extracts and staging must keep the latest version.
+
+- GitHub's `since` filter on commits uses the committer date. Author dates can be much older, so activity charts should use `commit.committer.date`.

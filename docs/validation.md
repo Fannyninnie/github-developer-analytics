@@ -1,0 +1,1 @@
+| Commit date window | by committer date 2026-08-13 to 2026-11-11, which matches the 90-day window. Author dates reach back to 2023-09-08 because rebased or cherry-picked commits keep their original author date |

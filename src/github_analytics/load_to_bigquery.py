@@ -68,27 +68,48 @@ def item_rows(folder, id_field, loaded_at):
     return rows
 
 
+def batch_keys(table_name, rows):
+    if table_name == "repo_snapshots":
+        return sorted({f"{row['snapshot_date']}|{row['repo']}" for row in rows})
+    return sorted({row["batch_id"] for row in rows})
+
+
+def delete_existing(client, table_id, table_name, keys):
+    if table_name == "repo_snapshots":
+        key_expression = "CONCAT(CAST(snapshot_date AS STRING), '|', repo)"
+    else:
+        key_expression = "batch_id"
+
+    query = f"DELETE FROM `{table_id}` WHERE {key_expression} IN UNNEST(@keys)"
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[bigquery.ArrayQueryParameter("keys", "STRING", keys)]
+    )
+    job = client.query(query, job_config=job_config)
+    job.result()
+    return job.num_dml_affected_rows or 0
+
+
 def load_table(client, project_id, table_name, rows):
     if not rows:
         logger.info("%s: no rows to load", table_name)
         return
 
     table_id = f"{project_id}.{DATASET}.{table_name}"
-    table = client.get_table(table_id)
-    if table.num_rows:
-        logger.warning(
-            "%s already has %s rows, skipping. Day 14 makes re-loads safe.",
-            table_name,
-            table.num_rows,
-        )
-        return
+    keys = batch_keys(table_name, rows)
+    deleted = delete_existing(client, table_id, table_name, keys)
 
     job_config = bigquery.LoadJobConfig(
         write_disposition=bigquery.WriteDisposition.WRITE_APPEND
     )
     job = client.load_table_from_json(rows, table_id, job_config=job_config)
     job.result()
-    logger.info("%s: loaded %s rows", table_name, len(rows))
+    logger.info(
+        "%s: replaced %s old rows with %s rows (%s batches)",
+        table_name,
+        deleted,
+        len(rows),
+        len(keys),
+    )
 
 
 def main():

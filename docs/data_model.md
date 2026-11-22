@@ -38,3 +38,8 @@ Dataset `raw`, location US. Every table is partitioned by day and clustered by `
 | pull_requests | one pull request | extracted_at |
 
 Payload tables keep the original JSON in a `payload` column plus bookkeeping columns. `batch_id` lets a load replace one batch without duplicating rows.
+## How loads stay idempotent
+
+Each extract file is a batch, identified by `batch_id` (its path). Before loading, the loader deletes the rows of the batches it is about to insert, then inserts them. Re-running replaces the same batches instead of duplicating them, and new extract files add new batches. Snapshots use snapshot date plus repo as the batch key.
+
+Known limitation: delete and insert are two steps, so a table is briefly empty during a reload, and a failure between them leaves it empty until the next run. A production version would load into a staging table and swap it in with a single MERGE.

@@ -9,3 +9,8 @@ test-paths: ["tests"]
 macro-paths: ["macros"]
 target-path: "target"
 clean-targets: ["target", "dbt_packages"]
+models:
+  github_analytics:
+    staging:
+      +materialized: view
+      +schema: staging

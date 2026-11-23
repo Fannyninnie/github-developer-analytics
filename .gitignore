@@ -247,3 +247,4 @@ airflow/logs/
 
 # Pipeline state
 data/state/
+dbt/.user.yml

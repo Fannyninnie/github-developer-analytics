@@ -27,3 +27,5 @@
 - `since` on issues filters by `updated_at`, so the same issue can appear in several extracts and staging must keep the latest version.
 
 - GitHub's `since` filter on commits uses the committer date. Author dates can be much older, so activity charts should use `commit.committer.date`.
+
+- GitHub repos get renamed. `dbt-labs/dbt-core` is now `dbt-labs/dbt`, and the old name redirects. The API reports the current name, so the loader maps names from `repos.txt` to the canonical name. A foreign-key check between facts and `dim_repo` found it.

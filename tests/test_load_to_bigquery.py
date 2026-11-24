@@ -35,3 +35,19 @@ def test_batch_keys_for_snapshots_combine_date_and_repo():
     assert load_to_bigquery.batch_keys("repo_snapshots", rows) == [
         "2026-11-10|pallets/flask"
     ]
+def test_item_rows_applies_repo_aliases(tmp_path, monkeypatch):
+    monkeypatch.setattr(load_to_bigquery, "RAW_DIR", tmp_path)
+    monkeypatch.setattr(load_to_bigquery, "REPO_ALIASES", {"old/name": "new/name"})
+    folder = tmp_path / "commits" / "repo=old__name"
+    folder.mkdir(parents=True)
+    content = {
+        "repo": "old/name",
+        "since": "x",
+        "extracted_at": "2026-11-10T14:00:00Z",
+        "commits": [{"sha": "a1"}],
+    }
+    (folder / "since=x.json").write_text(json.dumps(content))
+
+    rows = load_to_bigquery.item_rows("commits", "sha", "2026-11-10T15:00:00+00:00")
+
+    assert rows[0]["repo"] == "new/name"

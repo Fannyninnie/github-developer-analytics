@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 ROOT = Path(__file__).resolve().parents[2]
 RAW_DIR = ROOT / "data" / "raw"
 DATASET = "raw"
+# GitHub renamed some repos. Map the name in repos.txt to the current name GitHub reports.
+REPO_ALIASES = {"dbt-labs/dbt-core": "dbt-labs/dbt"}
 
 
 def read_json(path):
@@ -57,7 +59,7 @@ def item_rows(folder, id_field, loaded_at):
         for item in content[folder]:
             rows.append(
                 {
-                    "repo": content["repo"],
+                    "repo": REPO_ALIASES.get(content["repo"], content["repo"]),
                     id_field: item[id_field],
                     "batch_id": batch_id_for(path),
                     "extracted_at": content["extracted_at"],

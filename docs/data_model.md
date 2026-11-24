@@ -43,3 +43,33 @@ Payload tables keep the original JSON in a `payload` column plus bookkeeping col
 Each extract file is a batch, identified by `batch_id` (its path). Before loading, the loader deletes the rows of the batches it is about to insert, then inserts them. Re-running replaces the same batches instead of duplicating them, and new extract files add new batches. Snapshots use snapshot date plus repo as the batch key.
 
 Known limitation: delete and insert are two steps, so a table is briefly empty during a reload, and a failure between them leaves it empty until the next run. A production version would load into a staging table and swap it in with a single MERGE.
+## Staging models (dbt)
+
+One view per raw table, in dataset `analytics_staging`.
+
+| Model | What it does |
+|---|---|
+| stg_repo_snapshots | one row per repo per day, `open_issues_and_prs` renamed because GitHub counts PRs in that number |
+| stg_repositories | flattens repo JSON, latest extract per repo |
+| stg_commits | one row per commit, author and committer fields, no emails, null author login kept null |
+| stg_issues | real issues only (PRs removed), newest version of each by `updated_at` |
+| stg_pull_requests | newest version of each PR with `is_merged` |
+
+Spot checks: 1992 of 2002 commits have a linked GitHub author, 842 merged and 831 closed-unmerged pull requests with no merged-but-open rows, and 698 open plus 703 closed issues.
+
+
+## Marts (dbt)
+
+Dataset `analytics_marts`, built as tables, partitioned by date and clustered by repo.
+
+| Model | One row is |
+|---|---|
+| dim_repo | one repository |
+| dim_contributor | one GitHub login (bots flagged) |
+| dim_date | one calendar day |
+| fact_commits | one commit |
+| fact_pull_requests | one pull request, with hours to merge and close |
+| fact_issues | one real issue, with hours to close |
+| fact_repo_daily | one repo on one day, with day-over-day star and fork change |
+
+Decisions: contributors are identified by GitHub login, so commits with no linked account keep a null login and their author name. Commit timing uses committer date. Natural keys are used because they are unique at this scale. Marts are tables so dashboards do not re-scan raw JSON.

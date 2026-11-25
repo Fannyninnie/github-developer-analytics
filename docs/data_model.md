@@ -73,3 +73,11 @@ Dataset `analytics_marts`, built as tables, partitioned by date and clustered by
 | fact_repo_daily | one repo on one day, with day-over-day star and fork change |
 
 Decisions: contributors are identified by GitHub login, so commits with no linked account keep a null login and their author name. Commit timing uses committer date. Natural keys are used because they are unique at this scale. Marts are tables so dashboards do not re-scan raw JSON.
+
+## Data tests (dbt)
+
+- Every key is tested for `not_null`, and for `unique` where it is a single column. Composite keys such as repo plus sha use `unique_combination_of_columns` from dbt_utils.
+- Every fact's `repo` must exist in `dim_repo` (a `relationships` test), and every contributor login must exist in `dim_contributor`. The first manual version of this check found that GitHub had renamed `dbt-core` to `dbt`.
+- States are limited to `open` and `closed`.
+- Two custom tests in `dbt/tests`: no pull request is both open and merged, and no issue closes before it was created.
+- `dbt build` runs models and their tests in dependency order: 14 models and 42 tests, all passing.

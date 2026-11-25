@@ -1,0 +1,67 @@
+version: 2
+
+models:
+  - name: stg_repo_snapshots
+    description: One row per repo per snapshot day. The newest load wins if a day was loaded twice.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [repo, snapshot_date]
+    columns:
+      - name: repo
+        data_tests: [not_null]
+      - name: snapshot_date
+        data_tests: [not_null]
+      - name: open_issues_and_prs
+        description: GitHub counts open pull requests in this number, so it is not the number of open issues.
+
+  - name: stg_repositories
+    description: One row per repository, from the latest extract.
+    columns:
+      - name: repo
+        data_tests: [unique, not_null]
+
+  - name: stg_commits
+    description: One row per commit. Author emails are left out on purpose.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [repo, sha]
+    columns:
+      - name: sha
+        data_tests: [not_null]
+      - name: committed_at
+        description: Committer date. GitHub's since filter uses this one, and author dates can be much older.
+        data_tests: [not_null]
+      - name: author_login
+        description: Null when the commit email is not linked to a GitHub account.
+
+  - name: stg_issues
+    description: One row per real issue. Pull requests are removed, and only the newest version of each issue is kept.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [repo, issue_number]
+    columns:
+      - name: state
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['open', 'closed']
+      - name: created_at
+        data_tests: [not_null]
+
+  - name: stg_pull_requests
+    description: One row per pull request, newest version only.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [repo, pr_number]
+    columns:
+      - name: state
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['open', 'closed']
+      - name: created_at
+        data_tests: [not_null]

@@ -22,6 +22,8 @@ select
     contributor_login,
     min(activity_at) as first_seen_at,
     max(activity_at) as last_seen_at,
-    ends_with(contributor_login, '[bot]') as is_bot
+    ends_with(contributor_login, '[bot]') as is_bot,
+    -- Accounts judged to be automation from their GitHub profile. Keep this list short and documented.
+    contributor_login in ('fa-assistant') as is_automation
 from activity
 group by contributor_login

@@ -1,0 +1,116 @@
+version: 2
+
+models:
+  - name: dim_repo
+    description: One row per repository.
+    columns:
+      - name: repo
+        description: Canonical owner/name as GitHub reports it. Renamed repos are mapped in the loader.
+        data_tests: [unique, not_null]
+
+  - name: dim_contributor
+    description: One row per GitHub login. Accounts ending in [bot] are flagged, and a short list of automation accounts is flagged by hand.
+    columns:
+      - name: contributor_login
+        data_tests: [unique, not_null]
+      - name: is_bot
+        data_tests: [not_null]
+      - name: is_automation
+        data_tests: [not_null]
+
+  - name: dim_date
+    description: One row per calendar day for 2026 and 2027.
+    columns:
+      - name: date_day
+        data_tests: [unique, not_null]
+
+  - name: fact_commits
+    description: One row per commit.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [repo, sha]
+    columns:
+      - name: repo
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_repo')
+                field: repo
+      - name: contributor_login
+        description: Null for commits whose author is not linked to a GitHub account.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_contributor')
+                field: contributor_login
+      - name: committed_date
+        data_tests: [not_null]
+
+  - name: fact_pull_requests
+    description: One row per pull request, with hours to merge and to close.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [repo, pr_number]
+    columns:
+      - name: repo
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_repo')
+                field: repo
+      - name: contributor_login
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_contributor')
+                field: contributor_login
+      - name: state
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['open', 'closed']
+
+  - name: fact_issues
+    description: One row per real issue (pull requests excluded), with hours to close.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [repo, issue_number]
+    columns:
+      - name: repo
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_repo')
+                field: repo
+      - name: contributor_login
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_contributor')
+                field: contributor_login
+      - name: state
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['open', 'closed']
+
+  - name: fact_repo_daily
+    description: One row per repo per day, with day-over-day change in stars and forks.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [repo, snapshot_date]
+    columns:
+      - name: repo
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_repo')
+                field: repo

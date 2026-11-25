@@ -29,3 +29,6 @@
 - GitHub's `since` filter on commits uses the committer date. Author dates can be much older, so activity charts should use `commit.committer.date`.
 
 - GitHub repos get renamed. `dbt-labs/dbt-core` is now `dbt-labs/dbt`, and the old name redirects. The API reports the current name, so the loader maps names from `repos.txt` to the canonical name. A foreign-key check between facts and `dim_repo` found it.
+
+- Some automation accounts do not end in `[bot]` (for example `fa-assistant`, which does dbt release chores). `dim_contributor.is_automation` holds a short, manually judged list. In production this would be a maintained seed file.
+- Snapshot dates are in UTC, so an evening run in Los Angeles can be stamped with the next day's date.
